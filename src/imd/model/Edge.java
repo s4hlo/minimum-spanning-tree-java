@@ -1,6 +1,6 @@
 package imd.model;
 
-class Edge implements Comparable<Edge> {
+public class Edge implements Comparable<Edge> {
 
     public Edge(int src, int dest, int weight) {
         this.src = src;

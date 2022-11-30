@@ -19,74 +19,101 @@ public class Graph {
         edges.add(new Edge(src, dest, weight));
     }
 
-    private int find(Subset subsets[], int i) {
-        if (subsets[i].getParent() != i) {
-            subsets[i].setParent(find(subsets, subsets[i].getParent()));
+    // ? Disjoint sets funcs
+    private int find(Vector<Subset> subsets, int i) {
+        if (subsets.get(i).getParent() != i) {
+            subsets.get(i).setParent(find(subsets, subsets.get(i).getParent()));
         }
-        return subsets[i].getParent();
+        return subsets.get(i).getParent();
     }
 
-    private void Union(Subset subsets[], int x, int y) {
+    private void union(Vector<Subset> subsets, int x, int y) {
         int xroot = find(subsets, x);
         int yroot = find(subsets, y);
 
-        if (subsets[xroot].getRank() < subsets[yroot].getRank())
-            subsets[xroot].setParent(yroot);
-        else if (subsets[xroot].getRank() > subsets[yroot].getRank())
-            subsets[yroot].setParent(xroot);
-        else {
-            subsets[yroot].setParent(xroot);
-            subsets[xroot].setRank(subsets[xroot].getRank() + 1);
+        if (subsets.get(xroot).getRank() < subsets.get(yroot).getRank()) {
+            subsets.get(xroot).setParent(yroot);
+        } else if (subsets.get(xroot).getRank() > subsets.get(yroot).getRank()) {
+            subsets.get(yroot).setParent(xroot);
+        } else {
+            subsets.get(yroot).setParent(xroot);
+            subsets.get(xroot).setRank(subsets.get(xroot).getRank() + 1);
         }
     }
 
-    public void KruskalMST() {
+    private void swap(Vector<Edge> nums, int l, int i) {
+        Edge temp = nums.get(l);
+        nums.set(l, nums.get(i));
+        nums.set(i, temp);
+    }
+
+    private void permutations(Vector<Vector<Edge>> res,
+            Vector<Edge> nums, int l, int h) {
+        if (l == h) {
+            Vector<Edge> tmp = new Vector<Edge>(nums);
+            res.add(tmp);
+            return;
+        }
+        for (int i = l; i <= h; i++) {
+            swap(nums, l, i);
+            permutations(res, nums, l + 1, h);
+            swap(nums, l, i);
+        }
+    }
+
+    public Vector<Vector<Edge>> permute(Vector<Edge> nums) {
+        Vector<Vector<Edge>> res = new Vector<Vector<Edge>>();
+        int x = nums.size() - 1;
+        permutations(res, nums, 0, x);
+        return res;
+    }
+
+    public Vector<Vector<Edge>> generatePermutations() {
+        return permute(edges);
+
+    }
+
+    public void KruskalMST(Vector<Edge> graph) {
+        // ! vetor com a arvore geradora minima
         Vector<Edge> results = new Vector<Edge>();
-        int e = 0;
-        int i = 0;
+        int counter = 0;
 
-        Collections.sort(edges);
-        System.out.println("-----------");
-        for (Edge edge : edges) {
-            System.out.print( "(" + edge.getSrc() + " " + edge.getDest() + " " + edge.getWeight() + ")");
+        // Collections.sort(edges);
+
+        // * Temp Debug */
+        for (Edge edge : graph) {
+            System.out.print("(" + edge.getSrc() + " " + edge.getDest() + " " + edge.getWeight() + ")");
         }
-        System.out.println("-----------");
-        Subset subsets[] = new Subset[treeVerticesMax];
 
-        for (i = 0; i < treeVerticesMax; ++i)
-            subsets[i] = new Subset();
+        Vector<Subset> subsetss = new Vector<Subset>();
+
         for (int v = 0; v < treeVerticesMax; ++v) {
-            subsets[v].setParent(v);
-            subsets[v].setRank(0);
+            subsetss.add(new Subset(v, 0));
         }
 
-        i = 0;
-        while (e < treeVerticesMax - 1) {
-            Edge next_edge = edges.get(i);
-            i++;
-            int x = find(subsets, next_edge.getSrc());
-            int y = find(subsets, next_edge.getDest());
+        int counter2 = 0;
+        while (counter < treeVerticesMax - 1) {
+            Edge next_edge = graph.get(counter2);
+            counter2++;
+            int x = find(subsetss, next_edge.getSrc());
+            int y = find(subsetss, next_edge.getDest());
             if (x != y) {
                 results.add(next_edge);
-                e++;
-                Union(subsets, x, y);
+                counter++;
+                union(subsetss, x, y);
             }
         }
 
-
-        System.out.println("Following are the edges in "
-                + "the constructed MST");
+        System.out.println("aresta da arvore");
         int minimumCost = 0;
-
         for (Edge edge : results) {
             System.out.println(edge.getSrc()
-                               + " -- " + edge.getDest()
-                               + " == " + edge.getWeight());
+                    + " -- " + edge.getDest()
+                    + " == " + edge.getWeight());
             System.out.println("-----------------");
             minimumCost += edge.getWeight();
         }
 
-        System.out.println("Minimum Cost Spanning Tree "
-                + minimumCost);
+        System.out.println("Custo da arvore " + minimumCost);
     }
 }
